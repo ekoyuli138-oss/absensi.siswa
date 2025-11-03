@@ -1,35 +1,86 @@
-<script>
-  const video = document.getElementById('video');
-  const resultDiv = document.getElementById('result');
-
-  const codeReader = new ZXing.BrowserMultiFormatReader();
-
-  // Mulai scan dari kamera
-  codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
-    if (result) {
-      const scannedUrl = result.getText().trim();
-      
-      // Validasi: pastikan link Google Form yang valid
-      if (scannedUrl.startsWith('https://docs.google.com/forms/d/e/') && 
-          scannedUrl.includes('/formResponse')) {
-        
-        resultDiv.innerHTML = `<span style="color:green">✅ Link terdeteksi</span><br>Membuka form...`;
-        
-        // Buka link di tab baru
-        setTimeout(() => {
-          window.open(scannedUrl, '_blank');
-        }, 1000);
-        
-      } else {
-        resultDiv.textContent = '❌ QR Code bukan link Google Form yang valid.';
-      }
-    } else if (err && !(err instanceof ZXing.NotFoundException)) {
-      if (err.name === 'NotAllowedError') {
-        resultDiv.textContent = '❌ Izin kamera ditolak. Harap izinkan akses kamera.';
-      } else {
-        resultDiv.textContent = '❌ Gagal memuat kamera. Coba refresh halaman.';
-      }
-      console.error('Error:', err);
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scanner Absensi Siswa</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 15px;
+      background: #f8f9fa;
+      color: #333;
     }
-  });
-</script>
+    h2 {
+      color: #1a73e8;
+      margin-bottom: 15px;
+    }
+    #video {
+      width: 100%;
+      max-width: 500px;
+      border: 3px solid #4285f4;
+      border-radius: 12px;
+      background: #000;
+    }
+    #result {
+      margin: 15px 0;
+      font-size: 18px;
+      min-height: 30px;
+      font-weight: bold;
+      color: #1a73e8;
+    }
+    .note {
+      color: #5f6368;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>📸 Scan Barcode untuk Absensi</h2>
+  <video id="video" muted playsinline></video>
+  <div id="result">Arahkan kamera ke barcode siswa...</div>
+  <div class="note">Mendukung QR Code, Code 128, dan barcode umum lainnya</div>
+
+  <!-- ZXing Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+  <script>
+    // Inisialisasi elemen
+    const video = document.getElementById('video');
+    const resultDiv = document.getElementById('result');
+
+    // Inisialisasi scanner
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+
+    // Mulai scan
+    codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+      if (result) {
+        const scannedUrl = result.getText().trim();
+        
+        // Validasi link Google Form
+        if (scannedUrl.startsWith('https://docs.google.com/forms/d/e/') && 
+            scannedUrl.includes('/formResponse')) {
+          
+          resultDiv.innerHTML = `<span style="color:green">✅ Link terdeteksi</span><br>Membuka form...`;
+          
+          // Buka link di tab baru setelah 1 detik
+          setTimeout(() => {
+            window.open(scannedUrl, '_blank');
+          }, 1000);
+          
+        } else {
+          resultDiv.textContent = '❌ QR Code bukan link Google Form yang valid.';
+        }
+      } else if (err && !(err instanceof ZXing.NotFoundException)) {
+        if (err.name === 'NotAllowedError') {
+          resultDiv.textContent = '❌ Izin kamera ditolak. Harap izinkan akses kamera.';
+        } else {
+          resultDiv.textContent = '❌ Gagal memuat kamera. Coba refresh halaman.';
+        }
+        console.error('Error:', err);
+      }
+    });
+  </script>
+</body>
+</html>
