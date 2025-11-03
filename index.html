@@ -1,8 +1,4 @@
 <script>
-  // === KONFIGURASI GOOGLE FORM ANDA ===
-  const FORM_ID = '1FAIpQLSdKolmxs5zpP42cT1r9m8z5iKWj-EKTHB86UC9QRINnrNF7yA';
-  const ENTRY_ID = '1287510156'; // ID field "ID Siswa"
-
   const video = document.getElementById('video');
   const resultDiv = document.getElementById('result');
 
@@ -11,18 +7,22 @@
   // Mulai scan dari kamera
   codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
     if (result) {
-      const studentId = result.getText().trim();
-      resultDiv.innerHTML = `<span style="color:green">✅ Terdeteksi: ${studentId}</span><br>Membuka form absensi...`;
-
-      // Bangun URL Google Form dengan data terisi
-      const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/viewform?usp=pp_url&entry.${ENTRY_ID}=${encodeURIComponent(studentId)}`;
-
-      // Buka form di tab baru setelah 1 detik
-      setTimeout(() => {
-        window.open(formUrl, '_blank');
-        // Reset scanner agar bisa scan lagi (opsional)
-        // codeReader.reset();
-      }, 1000);
+      const scannedUrl = result.getText().trim();
+      
+      // Validasi: pastikan link Google Form yang valid
+      if (scannedUrl.startsWith('https://docs.google.com/forms/d/e/') && 
+          scannedUrl.includes('/formResponse')) {
+        
+        resultDiv.innerHTML = `<span style="color:green">✅ Link terdeteksi</span><br>Membuka form...`;
+        
+        // Buka link di tab baru
+        setTimeout(() => {
+          window.open(scannedUrl, '_blank');
+        }, 1000);
+        
+      } else {
+        resultDiv.textContent = '❌ QR Code bukan link Google Form yang valid.';
+      }
     } else if (err && !(err instanceof ZXing.NotFoundException)) {
       if (err.name === 'NotAllowedError') {
         resultDiv.textContent = '❌ Izin kamera ditolak. Harap izinkan akses kamera.';
