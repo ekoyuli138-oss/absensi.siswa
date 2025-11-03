@@ -6,81 +6,88 @@
   <title>Scanner Absensi Siswa</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 15px;
-      background: #f8f9fa;
-      color: #333;
+      padding: 20px;
+      background: #f5f5f5;
     }
-    h2 {
-      color: #1a73e8;
-      margin-bottom: 15px;
-    }
+    h2 { color: #007bff; }
     #video {
       width: 100%;
       max-width: 500px;
-      border: 3px solid #4285f4;
-      border-radius: 12px;
+      border: 2px solid #007bff;
+      border-radius: 8px;
       background: #000;
     }
     #result {
       margin: 15px 0;
       font-size: 18px;
-      min-height: 30px;
+      min-height: 24px;
       font-weight: bold;
-      color: #1a73e8;
+      color: #28a745;
     }
     .note {
-      color: #5f6368;
+      color: #666;
       font-size: 14px;
       margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h2>📸 Scan Barcode untuk Absensi</h2>
+  <h2>📱 Scanner Absensi Siswa</h2>
   <video id="video" muted playsinline></video>
   <div id="result">Arahkan kamera ke barcode siswa...</div>
-  <div class="note">Mendukung QR Code, Code 128, dan barcode umum lainnya</div>
+  <div class="note">Mendukung QR Code, Code 128, EAN</div>
 
-  <!-- ZXing Library -->
-  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+  <!-- Load ZXing via CDN dengan fallback -->
   <script>
-    // Inisialisasi elemen
-    const video = document.getElementById('video');
-    const resultDiv = document.getElementById('result');
+    // Fallback jika CDN gagal
+    window.addEventListener('load', function() {
+      const video = document.getElementById('video');
+      const resultDiv = document.getElementById('result');
 
-    // Inisialisasi scanner
-    const codeReader = new ZXing.BrowserMultiFormatReader();
+      // Cek apakah ZXing sudah tersedia
+      if (typeof ZXing === 'undefined') {
+        resultDiv.textContent = '❌ Library ZXing gagal dimuat. Coba refresh atau gunakan browser lain.';
+        return;
+      }
 
-    // Mulai scan
-    codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
-      if (result) {
-        const scannedUrl = result.getText().trim();
-        
-        // Validasi link Google Form
-        if (scannedUrl.startsWith('https://docs.google.com/forms/d/e/') && 
-            scannedUrl.includes('/formResponse')) {
-          
-          resultDiv.innerHTML = `<span style="color:green">✅ Link terdeteksi</span><br>Membuka form...`;
-          
-          // Buka link di tab baru setelah 1 detik
-          setTimeout(() => {
-            window.open(scannedUrl, '_blank');
-          }, 1000);
-          
-        } else {
-          resultDiv.textContent = '❌ QR Code bukan link Google Form yang valid.';
-        }
-      } else if (err && !(err instanceof ZXing.NotFoundException)) {
-        if (err.name === 'NotAllowedError') {
-          resultDiv.textContent = '❌ Izin kamera ditolak. Harap izinkan akses kamera.';
-        } else {
-          resultDiv.textContent = '❌ Gagal memuat kamera. Coba refresh halaman.';
-        }
-        console.error('Error:', err);
+      try {
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+
+        codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+          if (result) {
+            const scannedUrl = result.getText().trim();
+            
+            // Validasi link Google Form
+            if (scannedUrl.startsWith('https://docs.google.com/forms/d/e/') && 
+                scannedUrl.includes('/formResponse')) {
+              
+              resultDiv.innerHTML = `<span style="color:green">✅ Link terdeteksi</span><br>Membuka form...`;
+              
+              setTimeout(() => {
+                window.open(scannedUrl, '_blank');
+              }, 1000);
+              
+            } else {
+              resultDiv.textContent = '❌ Bukan link Google Form yang valid.';
+            }
+          } else if (err && !(err instanceof ZXing.NotFoundException)) {
+            if (err.name === 'NotAllowedError') {
+              resultDiv.textContent = '❌ Izin kamera ditolak. Harap izinkan akses kamera.';
+            } else {
+              resultDiv.textContent = '❌ Gagal memuat kamera. Coba refresh halaman.';
+            }
+            console.error('Error:', err);
+          }
+        });
+      } catch (e) {
+        resultDiv.textContent = '❌ Error: ' + e.message;
+        console.error('Script error:', e);
       }
     });
   </script>
+  <!-- Load library ZXing -->
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
 </body>
 </html>
