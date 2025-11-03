@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scanner Absensi</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 15px; background: #f0f8ff; }
+    #video { width: 100%; max-width: 500px; border: 2px solid #2196f3; border-radius: 8px; background: #000; }
+    #result { margin: 15px 0; font-size: 18px; min-height: 24px; font-weight: bold; color: #0d6efd; }
+    .note { color: #666; font-size: 14px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>📷 Scan Barcode Absensi</h2>
+  <video id="video" muted playsinline></video>
+  <div id="result">Arahkan kamera ke barcode...</div>
+  <div class="note">QR Code, Code 128, dan EAN didukung</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+  <script>
+    const video = document.getElementById('video');
+    const resultDiv = document.getElementById('result');
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+
+    // Coba buka kamera utama (biasanya belakang di HP)
+    codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+      if (result) {
+        resultDiv.textContent = '✅ ID Siswa: ' + result.getText();
+        // Hentikan scan setelah berhasil (opsional)
+        // setTimeout(() => codeReader.reset(), 1000);
+      } else if (err && !(err instanceof ZXing.NotFoundException)) {
+        resultDiv.textContent = '❌ Izin kamera ditolak atau tidak didukung.';
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
